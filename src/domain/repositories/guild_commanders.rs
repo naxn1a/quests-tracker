@@ -7,7 +7,7 @@ use mockall::automock;
 
 #[async_trait]
 #[automock]
-pub trait GuildCommanderRepository {
+pub trait GuildCommandersRepository {
     async fn register(
         &self,
         register_guild_commander_entity: RegisterGuildCommanderEntity,

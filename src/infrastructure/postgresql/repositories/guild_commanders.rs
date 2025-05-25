@@ -1,7 +1,7 @@
 use crate::{
     domain::{
         entities::guild_commanders::{GuildCommanderEntity, RegisterGuildCommanderEntity},
-        repositories::guild_commanders::GuildCommanderRepository,
+        repositories::guild_commanders::GuildCommandersRepository,
     },
     infrastructure::postgresql::connection::PgPoolSquad,
 };
@@ -20,7 +20,7 @@ impl GuildCommanderPostgres {
 }
 
 #[async_trait]
-impl GuildCommanderRepository for GuildCommanderPostgres {
+impl GuildCommandersRepository for GuildCommanderPostgres {
     async fn register(
         &self,
         register_guild_commander_entity: RegisterGuildCommanderEntity,
