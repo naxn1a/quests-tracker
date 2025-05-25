@@ -1,5 +1,3 @@
-/target
-
 # MacOS
 .DS_Store
 .AppleDouble
@@ -18,3 +16,11 @@ $RECYCLE.BIN/
 
 # Logs
 *.log
+
+/target
+
+# env
+.env
+
+# database
+migrations/
