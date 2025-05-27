@@ -3,10 +3,13 @@ use crate::{
     domain::repositories::{
         crew_switchboard::CrewSwitchboardRepository, quest_viewing::QuestViewingRepository,
     },
-    infrastructure::postgresql::{
-        connection::PgPoolSquad,
-        repositories::{
-            crew_switchboard::CrewSwitchboardPostgres, quest_viewing::QuestViewingPostgres,
+    infrastructure::{
+        axum::middlewares::adventurers_authorization,
+        postgresql::{
+            connection::PgPoolSquad,
+            repositories::{
+                crew_switchboard::CrewSwitchboardPostgres, quest_viewing::QuestViewingPostgres,
+            },
         },
     },
 };
@@ -14,6 +17,7 @@ use axum::{
     Extension, Router,
     extract::{Path, State},
     http::StatusCode,
+    middleware,
     response::IntoResponse,
     routing::{delete, post},
 };
@@ -30,6 +34,7 @@ pub fn routes(db_pool: Arc<PgPoolSquad>) -> Router {
     Router::new()
         .route("/join/:quest_id", post(join))
         .route("/leave/:quest_id", delete(leave))
+        .route_layer(middleware::from_fn(adventurers_authorization))
         .with_state(Arc::new(crew_switchboard_use_case))
 }
 
