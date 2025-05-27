@@ -71,7 +71,7 @@ where
             || quest.status == QuestStatus::Failed.to_string();
 
         if !leaving_condition {
-            return Err(anyhow::anyhow!("Quest is not leaveable."));
+            return Err(anyhow::anyhow!("Quest is not leavable."));
         }
 
         self.crew_switchboard_repository
