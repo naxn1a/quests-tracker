@@ -28,10 +28,18 @@ $ diesel migration generate init
 $ diesel migration run
 ```
 
-4. **Run the Server**:
+5. **Run the Server**:
 
 ```sh
 $ cargo run
+```
+
+6. **Run Test**
+
+```sh
+$ cargo test
+or
+$ cargo tarpaulin --out html
 ```
 
 ### 🙌 Credit
