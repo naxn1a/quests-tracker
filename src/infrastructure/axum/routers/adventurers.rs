@@ -8,7 +8,7 @@ use crate::{
         connection::PgPoolSquad, repositories::adventurers::AdventurersPostgres,
     },
 };
-use axum::{Json, Router, extract::State, response::IntoResponse, routing::post};
+use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::post};
 use std::sync::Arc;
 
 pub fn routes(db_pool: Arc<PgPoolSquad>) -> Router {
@@ -27,5 +27,15 @@ pub async fn register<T>(
 where
     T: AdventurersRepository + Send + Sync,
 {
-    unimplemented!();
+    match adventures_use_case
+        .register(register_adventurer_model)
+        .await
+    {
+        Ok(adventurer_id) => (
+            StatusCode::CREATED,
+            format!("Register adventurer id: {} successfully!", adventurer_id),
+        )
+            .into_response(),
+        Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()).into_response(),
+    }
 }

@@ -8,7 +8,7 @@ use crate::{
         connection::PgPoolSquad, repositories::guild_commanders::GuildCommanderPostgres,
     },
 };
-use axum::{Json, Router, extract::State, response::IntoResponse, routing::post};
+use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::post};
 use std::sync::Arc;
 
 pub fn routes(db_pool: Arc<PgPoolSquad>) -> Router {
@@ -28,5 +28,5 @@ pub async fn register<T>(
 where
     T: GuildCommandersRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }

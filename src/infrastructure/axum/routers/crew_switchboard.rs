@@ -13,6 +13,7 @@ use crate::{
 use axum::{
     Extension, Router,
     extract::{Path, State},
+    http::StatusCode,
     response::IntoResponse,
     routing::{delete, post},
 };
@@ -41,7 +42,7 @@ where
     T1: CrewSwitchboardRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }
 
 pub async fn leave<T1, T2>(
@@ -53,5 +54,5 @@ where
     T1: CrewSwitchboardRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }

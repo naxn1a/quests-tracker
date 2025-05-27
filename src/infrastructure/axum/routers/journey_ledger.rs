@@ -13,7 +13,7 @@ use crate::{
 use axum::{
     Extension, Router,
     extract::{Path, State},
-    middleware,
+    http::StatusCode,
     response::IntoResponse,
     routing::patch,
 };
@@ -43,7 +43,7 @@ where
     T1: JourneyLedgerRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
 }
 
 pub async fn to_completed<T1, T2>(
@@ -55,7 +55,7 @@ where
     T1: JourneyLedgerRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
 }
 
 pub async fn to_failed<T1, T2>(
@@ -67,5 +67,5 @@ where
     T1: JourneyLedgerRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
 }

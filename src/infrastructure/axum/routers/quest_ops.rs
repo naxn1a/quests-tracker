@@ -12,6 +12,7 @@ use crate::{
 use axum::{
     Extension, Json, Router,
     extract::{Path, State},
+    http::StatusCode,
     response::IntoResponse,
     routing::{delete, patch, post},
 };
@@ -41,7 +42,7 @@ where
     T1: QuestOpsRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
 }
 
 pub async fn edit<T1, T2>(
@@ -54,7 +55,7 @@ where
     T1: QuestOpsRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
 }
 
 pub async fn remove<T1, T2>(
@@ -66,5 +67,5 @@ where
     T1: QuestOpsRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
 }

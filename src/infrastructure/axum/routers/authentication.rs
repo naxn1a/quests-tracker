@@ -10,7 +10,7 @@ use crate::{
         },
     },
 };
-use axum::{Json, Router, extract::State, response::IntoResponse, routing::post};
+use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::post};
 use std::sync::Arc;
 
 pub fn routes(db_pool: Arc<PgPoolSquad>) -> Router {
@@ -39,7 +39,7 @@ where
     T1: AdventurersRepository + Send + Sync,
     T2: GuildCommandersRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }
 
 pub async fn adventurers_refresh_token<T1, T2>(
@@ -49,7 +49,7 @@ where
     T1: AdventurersRepository + Send + Sync,
     T2: GuildCommandersRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }
 
 pub async fn guild_commanders_login<T1, T2>(
@@ -59,7 +59,7 @@ where
     T1: AdventurersRepository + Send + Sync,
     T2: GuildCommandersRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }
 
 pub async fn guild_commanders_refresh_token<T1, T2>(
@@ -69,5 +69,5 @@ where
     T1: AdventurersRepository + Send + Sync,
     T2: GuildCommandersRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }

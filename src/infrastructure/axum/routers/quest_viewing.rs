@@ -11,6 +11,7 @@ use crate::{
 use axum::{
     Router,
     extract::{Path, Query, State},
+    http::StatusCode,
     response::IntoResponse,
     routing::get,
 };
@@ -33,7 +34,7 @@ pub async fn view_details<T>(
 where
     T: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }
 
 pub async fn board_checking<T>(
@@ -43,5 +44,5 @@ pub async fn board_checking<T>(
 where
     T: QuestViewingRepository + Send + Sync,
 {
-    unimplemented!();
+    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
 }
