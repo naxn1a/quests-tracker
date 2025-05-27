@@ -39,7 +39,7 @@ pub fn get_adventurer_secret() -> Result<AdventurersSecret> {
 
     Ok(AdventurersSecret {
         secret: std::env::var("JWT_ADVENTURER_SECRET").expect("JWT_ADVENTURER_SECRET is invalid"),
-        refresh_token: std::env::var("JWT_ADVENTURER_REFRESH_TOKEN")
+        refresh_token: std::env::var("JWT_ADVENTURER_REFRESH_SECRET")
             .expect("JWT_ADVENTURER_REFRESH_TOKEN is invalid"),
     })
 }
@@ -50,7 +50,7 @@ pub fn get_guild_commander_secret() -> Result<GuildCommandersSecret> {
     Ok(GuildCommandersSecret {
         secret: std::env::var("JWT_GUILD_COMMANDER_SECRET")
             .expect("JWT_GUILD_COMMANDER_SECRET is invalid"),
-        refresh_token: std::env::var("JWT_GUILD_COMMANDER_REFRESH_TOKEN")
+        refresh_token: std::env::var("JWT_GUILD_COMMANDER_REFRESH_SECRET")
             .expect("JWT_GUILD_COMMANDER_REFRESH_TOKEN is invalid"),
     })
 }

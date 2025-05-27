@@ -1,16 +1,28 @@
 use crate::{
     application::usecases::authentication::AuthenticationUseCase,
+    config::{loader::get_stage, stage::Stage},
     domain::repositories::{
         adventurers::AdventurersRepository, guild_commanders::GuildCommandersRepository,
     },
-    infrastructure::postgresql::{
-        connection::PgPoolSquad,
-        repositories::{
-            adventurers::AdventurersPostgres, guild_commanders::GuildCommanderPostgres,
+    infrastructure::{
+        auth::authentication_model::LoginModel,
+        postgresql::{
+            connection::PgPoolSquad,
+            repositories::{
+                adventurers::AdventurersPostgres, guild_commanders::GuildCommanderPostgres,
+            },
         },
     },
 };
-use axum::{Json, Router, extract::State, http::StatusCode, response::IntoResponse, routing::post};
+use axum::{
+    Json, Router,
+    extract::State,
+    http::{HeaderMap, HeaderValue, StatusCode, header},
+    response::IntoResponse,
+    routing::post,
+};
+use axum_extra::extract::cookie::{Cookie, CookieJar};
+use cookie::time::Duration;
 use std::sync::Arc;
 
 pub fn routes(db_pool: Arc<PgPoolSquad>) -> Router {
@@ -22,8 +34,11 @@ pub fn routes(db_pool: Arc<PgPoolSquad>) -> Router {
     );
 
     Router::new()
-        .route("/adventures/login", post(adventurers_login))
-        .route("/adventures/refresh-token", post(adventurers_refresh_token))
+        .route("/adventurers/login", post(adventurers_login))
+        .route(
+            "/adventurers/refresh-token",
+            post(adventurers_refresh_token),
+        )
         .route("/guild-commanders/login", post(guild_commanders_login))
         .route(
             "/guild-commanders/refresh-token",
@@ -34,40 +49,205 @@ pub fn routes(db_pool: Arc<PgPoolSquad>) -> Router {
 
 pub async fn adventurers_login<T1, T2>(
     State(authentication_use_case): State<Arc<AuthenticationUseCase<T1, T2>>>,
+    Json(login_model): Json<LoginModel>,
 ) -> impl IntoResponse
 where
     T1: AdventurersRepository + Send + Sync,
     T2: GuildCommandersRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
+    match authentication_use_case.adventures_login(login_model).await {
+        Ok(passport) => {
+            let mut act_cookie = Cookie::build(("act", passport.access_token.clone()))
+                .path("/")
+                .same_site(cookie::SameSite::Lax)
+                .http_only(true)
+                .max_age(Duration::days(14));
+
+            let mut rft_cookie = Cookie::build(("rft", passport.refresh_token.clone()))
+                .path("/")
+                .same_site(cookie::SameSite::Lax)
+                .http_only(true)
+                .max_age(Duration::days(14));
+
+            if get_stage() == Stage::Production {
+                act_cookie = act_cookie.secure(true);
+                rft_cookie = rft_cookie.secure(true);
+            }
+
+            let mut headers = HeaderMap::new();
+
+            headers.append(
+                header::SET_COOKIE,
+                HeaderValue::from_str(&act_cookie.to_string()).unwrap(),
+            );
+
+            headers.append(
+                header::SET_COOKIE,
+                HeaderValue::from_str(&rft_cookie.to_string()).unwrap(),
+            );
+
+            (StatusCode::OK, headers, "Login successfully!").into_response()
+        }
+        Err(err) => (StatusCode::UNAUTHORIZED, err.to_string()).into_response(),
+    }
 }
 
 pub async fn adventurers_refresh_token<T1, T2>(
     State(authentication_use_case): State<Arc<AuthenticationUseCase<T1, T2>>>,
+    jar: CookieJar,
 ) -> impl IntoResponse
 where
     T1: AdventurersRepository + Send + Sync,
     T2: GuildCommandersRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
+    if let Some(rft) = jar.get("rft") {
+        let refresh_token = rft.value().to_string();
+
+        let res = match authentication_use_case
+            .adventurers_refresh_token(refresh_token)
+            .await
+        {
+            Ok(passport) => {
+                let mut act_cookie = Cookie::build(("act", passport.access_token.clone()))
+                    .path("/")
+                    .same_site(cookie::SameSite::Lax)
+                    .http_only(true)
+                    .max_age(Duration::days(14));
+
+                let mut rft_cookie = Cookie::build(("rft", passport.refresh_token.clone()))
+                    .path("/")
+                    .same_site(cookie::SameSite::Lax)
+                    .http_only(true)
+                    .max_age(Duration::days(14));
+
+                if get_stage() == Stage::Production {
+                    act_cookie = act_cookie.secure(true);
+                    rft_cookie = rft_cookie.secure(true);
+                }
+
+                let mut headers = HeaderMap::new();
+
+                headers.append(
+                    header::SET_COOKIE,
+                    HeaderValue::from_str(&act_cookie.to_string()).unwrap(),
+                );
+
+                headers.append(
+                    header::SET_COOKIE,
+                    HeaderValue::from_str(&rft_cookie.to_string()).unwrap(),
+                );
+
+                (StatusCode::OK, headers, "Login successfully!").into_response()
+            }
+            Err(err) => (StatusCode::UNAUTHORIZED, err.to_string()).into_response(),
+        };
+
+        return res;
+    };
+
+    (StatusCode::BAD_REQUEST, "Refresh token not found!").into_response()
 }
 
 pub async fn guild_commanders_login<T1, T2>(
     State(authentication_use_case): State<Arc<AuthenticationUseCase<T1, T2>>>,
+    Json(login_model): Json<LoginModel>,
 ) -> impl IntoResponse
 where
     T1: AdventurersRepository + Send + Sync,
     T2: GuildCommandersRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
+    match authentication_use_case
+        .guild_commanders_login(login_model)
+        .await
+    {
+        Ok(passport) => {
+            let mut act_cookie = Cookie::build(("act", passport.access_token.clone()))
+                .path("/")
+                .same_site(cookie::SameSite::Lax)
+                .http_only(true)
+                .max_age(Duration::days(14));
+
+            let mut rft_cookie = Cookie::build(("rft", passport.refresh_token.clone()))
+                .path("/")
+                .same_site(cookie::SameSite::Lax)
+                .http_only(true)
+                .max_age(Duration::days(14));
+
+            if get_stage() == Stage::Production {
+                act_cookie = act_cookie.secure(true);
+                rft_cookie = rft_cookie.secure(true);
+            }
+
+            let mut headers = HeaderMap::new();
+
+            headers.append(
+                header::SET_COOKIE,
+                HeaderValue::from_str(&act_cookie.to_string()).unwrap(),
+            );
+
+            headers.append(
+                header::SET_COOKIE,
+                HeaderValue::from_str(&rft_cookie.to_string()).unwrap(),
+            );
+
+            (StatusCode::OK, headers, "Login successfully!").into_response()
+        }
+        Err(err) => (StatusCode::UNAUTHORIZED, err.to_string()).into_response(),
+    }
 }
 
 pub async fn guild_commanders_refresh_token<T1, T2>(
     State(authentication_use_case): State<Arc<AuthenticationUseCase<T1, T2>>>,
+    jar: CookieJar,
 ) -> impl IntoResponse
 where
     T1: AdventurersRepository + Send + Sync,
     T2: GuildCommandersRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
+    if let Some(rft) = jar.get("rft") {
+        let refresh_token = rft.value().to_string();
+
+        let res = match authentication_use_case
+            .guild_commanders_refresh_token(refresh_token)
+            .await
+        {
+            Ok(passport) => {
+                let mut act_cookie = Cookie::build(("act", passport.access_token.clone()))
+                    .path("/")
+                    .same_site(cookie::SameSite::Lax)
+                    .http_only(true)
+                    .max_age(Duration::days(14));
+
+                let mut rft_cookie = Cookie::build(("rft", passport.refresh_token.clone()))
+                    .path("/")
+                    .same_site(cookie::SameSite::Lax)
+                    .http_only(true)
+                    .max_age(Duration::days(14));
+
+                if get_stage() == Stage::Production {
+                    act_cookie = act_cookie.secure(true);
+                    rft_cookie = rft_cookie.secure(true);
+                }
+
+                let mut headers = HeaderMap::new();
+
+                headers.append(
+                    header::SET_COOKIE,
+                    HeaderValue::from_str(&act_cookie.to_string()).unwrap(),
+                );
+
+                headers.append(
+                    header::SET_COOKIE,
+                    HeaderValue::from_str(&rft_cookie.to_string()).unwrap(),
+                );
+
+                (StatusCode::OK, headers, "Login successfully!").into_response()
+            }
+            Err(err) => (StatusCode::UNAUTHORIZED, err.to_string()).into_response(),
+        };
+
+        return res;
+    };
+
+    (StatusCode::BAD_REQUEST, "Refresh token not found!").into_response()
 }
