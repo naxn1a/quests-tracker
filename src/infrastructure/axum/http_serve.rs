@@ -1,3 +1,4 @@
+use crate::infrastructure::axum::routers;
 use crate::{config::model::DotEnvConfig, infrastructure::postgresql::connection::PgPoolSquad};
 use anyhow::Ok;
 use anyhow::Result;
@@ -21,6 +22,34 @@ use super::health;
 pub async fn start(config: Arc<DotEnvConfig>, db_pool: Arc<PgPoolSquad>) -> Result<()> {
     let app = Router::new()
         .fallback(health::not_found)
+        .nest(
+            "/journey-ledger",
+            routers::journey_ledger::routes(Arc::clone(&db_pool)),
+        )
+        .nest(
+            "/quest-ops",
+            routers::quest_ops::routes(Arc::clone(&db_pool)),
+        )
+        .nest(
+            "/crew-switchboard",
+            routers::crew_switchboard::routes(Arc::clone(&db_pool)),
+        )
+        .nest(
+            "/guild-commanders",
+            routers::guild_commanders::routes(Arc::clone(&db_pool)),
+        )
+        .nest(
+            "/adventurers",
+            routers::adventurers::routes(Arc::clone(&db_pool)),
+        )
+        .nest(
+            "/quest-viewing",
+            routers::quest_viewing::routes(Arc::clone(&db_pool)),
+        )
+        .nest(
+            "/authentication",
+            routers::authentication::routes(Arc::clone(&db_pool)),
+        )
         .route("/health", get(health::check))
         .layer(TimeoutLayer::new(Duration::from_secs(
             config.server.timeout,
