@@ -9,7 +9,7 @@ use crate::{
     },
 };
 use axum::{
-    Router,
+    Json, Router,
     extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
@@ -34,7 +34,10 @@ pub async fn view_details<T>(
 where
     T: QuestViewingRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
+    match quest_viewing_use_case.view_details(quest_id).await {
+        Ok(quest_model) => (StatusCode::OK, Json(quest_model)).into_response(),
+        Err(_) => (StatusCode::NOT_FOUND, "Quest not found").into_response(),
+    }
 }
 
 pub async fn board_checking<T>(
@@ -44,5 +47,8 @@ pub async fn board_checking<T>(
 where
     T: QuestViewingRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
+    match quest_viewing_use_case.board_checking(&filter).await {
+        Ok(quests_model) => (StatusCode::OK, Json(quests_model)).into_response(),
+        Err(_) => (StatusCode::NOT_FOUND, "Quest not found").into_response(),
+    }
 }

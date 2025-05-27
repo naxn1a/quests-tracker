@@ -47,7 +47,13 @@ where
     T1: CrewSwitchboardRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
+    match crew_switchboard_use_case
+        .join(quest_id, adventurer_id)
+        .await
+    {
+        Ok(_) => (StatusCode::OK, "Joined successfully").into_response(),
+        Err(e) => (StatusCode::BAD_REQUEST, e.to_string()).into_response(),
+    }
 }
 
 pub async fn leave<T1, T2>(
@@ -59,5 +65,11 @@ where
     T1: CrewSwitchboardRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!
+    match crew_switchboard_use_case
+        .leave(quest_id, adventurer_id)
+        .await
+    {
+        Ok(_) => StatusCode::OK.into_response(),
+        Err(e) => (StatusCode::BAD_REQUEST, e.to_string()).into_response(),
+    }
 }

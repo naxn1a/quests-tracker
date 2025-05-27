@@ -1,7 +1,10 @@
 use crate::{
     application::usecases::jouney_ledger::JourneyLedgerUseCase,
-    domain::repositories::{
-        journey_ledger::JourneyLedgerRepository, quest_viewing::QuestViewingRepository,
+    domain::{
+        repositories::{
+            journey_ledger::JourneyLedgerRepository, quest_viewing::QuestViewingRepository,
+        },
+        value_object::quest_statuses::QuestStatus,
     },
     infrastructure::{
         axum::middlewares::guild_commanders_authorization,
@@ -48,7 +51,17 @@ where
     T1: JourneyLedgerRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
+    match journey_ledger_use_case
+        .in_journey(quest_id, guild_commander_id)
+        .await
+    {
+        Ok(quest_id) => (
+            StatusCode::OK,
+            format!("Quest id: {} is now {:?}", quest_id, QuestStatus::InJourney),
+        )
+            .into_response(),
+        Err(e) => (StatusCode::NOT_FOUND, e.to_string()).into_response(),
+    }
 }
 
 pub async fn to_completed<T1, T2>(
@@ -60,7 +73,17 @@ where
     T1: JourneyLedgerRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
+    match journey_ledger_use_case
+        .to_completed(quest_id, guild_commander_id)
+        .await
+    {
+        Ok(quest_id) => (
+            StatusCode::OK,
+            format!("Quest id: {} is now {:?}", quest_id, QuestStatus::Completed),
+        )
+            .into_response(),
+        Err(e) => (StatusCode::NOT_FOUND, e.to_string()).into_response(),
+    }
 }
 
 pub async fn to_failed<T1, T2>(
@@ -72,5 +95,15 @@ where
     T1: JourneyLedgerRepository + Send + Sync,
     T2: QuestViewingRepository + Send + Sync,
 {
-    (StatusCode::NOT_FOUND, "Unimplemented!").into_response() // << unimplemented!)
+    match journey_ledger_use_case
+        .to_failed(quest_id, guild_commander_id)
+        .await
+    {
+        Ok(quest_id) => (
+            StatusCode::OK,
+            format!("Quest id: {} is now {:?}", quest_id, QuestStatus::Failed),
+        )
+            .into_response(),
+        Err(e) => (StatusCode::NOT_FOUND, e.to_string()).into_response(),
+    }
 }
